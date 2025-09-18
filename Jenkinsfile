@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         APP_ENV = "development"
+        USSR = credentials('user')
     }
 
     stages {
@@ -22,9 +23,9 @@ pipeline {
         }
         stage ('Use Secret') {
             steps {
-                withCredentials([string(credentialsId: 'user', variable: 'USER')]) {
-                    echo "My secret text is $USER"
-                }
+                sh '''
+                    echo ${USSR}
+                '''
             }
         }
         stage ('Build') {
@@ -41,6 +42,15 @@ pipeline {
             steps {
                 echo 'Deploying....'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Success!'
+        }
+        failure {
+            echo 'Failed!'
         }
     }
 }
