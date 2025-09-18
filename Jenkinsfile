@@ -1,3 +1,7 @@
+def runTests(version) {
+    sh "echo ${version}"
+}
+
 pipeline {
     agent {
         node {
@@ -6,51 +10,60 @@ pipeline {
     }
 
     environment {
-        APP_ENV = "development"
-        USSR = credentials('user')
+        DEPLOY_KEY = credentials('user')
     }
 
     stages {
-        stage ('Checkout') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Rullabcde/learn-jenkins.git'
+                git branch: 'main', repo: 'https://github.com/Rullabcde/learn-jenkins.git'
             }
         }
-        stage ('Check Env') {
+        stage('Install') {
             steps {
-                echo "Environment is ${APP_ENV}"
+                echo "Installing dependencies"
             }
         }
-        stage ('Use Secret') {
-            steps {
-                sh '''
-                    echo ${USSR}
-                '''
+        stage('Test') {
+            parallel {
+                stage('Node 16') {
+                    steps {
+                        script {
+                            runTests('16')
+                        }
+                    }
+                }
+                stage('Node 18') {
+                    steps {
+                        script {
+                            runTests('18')
+                        }
+                    }
+                }
             }
         }
-        stage ('Build') {
-            steps {
-                echo 'Building..'
+        stage('Deploy') {
+            when {
+                branch 'main'
             }
-        }
-        stage ('Test') {
             steps {
-                echo 'Testing..'
-            }
-        }
-        stage ('Deploy') {
-            steps {
-                echo 'Deploying....'
+                echo "Deploying to production server"
+                sh 'echo $DEPLOY_KEY'
             }
         }
     }
-
     post {
         success {
-            echo 'Success!'
+            echo "Success"
         }
         failure {
-            echo 'Failed!'
+            echo "Failed"
+        }
+        changed {
+            echo "Pipeline changed"
+        }
+        unstable {
+            echo "Unstable"
         }
     }
 }
