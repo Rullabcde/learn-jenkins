@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', repo: 'https://github.com/Rullabcde/learn-jenkins.git'
+                git branch: 'main', url: 'https://github.com/Rullabcde/learn-jenkins.git'
             }
         }
         stage('Install') {
