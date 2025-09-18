@@ -47,9 +47,6 @@ pipeline {
             }
         }
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
             steps {
                 echo "Deploying to production server"
                 sh 'echo $DEPLOY_KEY'
