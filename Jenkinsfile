@@ -9,6 +9,10 @@ pipeline {
         }
     }
 
+    triggers {
+        githubPush()
+    }
+
     environment {
         DEPLOY_KEY = credentials('user')
     }
