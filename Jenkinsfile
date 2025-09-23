@@ -34,7 +34,7 @@ pipeline {
             }
             steps {
                 echo "Installing dependencies"
-                sh 'npm ci'
+                sh 'npm install --legacy-peer-deps'
             }
         }
         stage ('Test & Coverage') {
