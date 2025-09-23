@@ -44,7 +44,7 @@ pipeline {
             }
             steps {
                 echo "Running tests"
-                sh 'npm test -- --junit-output=report.xml'
+                sh 'npm test'
                 junit 'report.xml'
             }
         }
