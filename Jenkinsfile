@@ -22,6 +22,7 @@ pipeline {
         REGISTRY = 'docker.io'
         IMAGE_NAME = 'docker.io/rullabcd/app'
         IMAGE_TAG = 'latest'
+        DEPLOY_KEY = credentials('deploy-key')
     }
 
     stages {
@@ -50,6 +51,7 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 echo "Deploying to production server..."
+                ssh -i $DEPLOY_KEY ubuntu@ec2-3-235-232-5.compute-1.amazonaws.com 'docker pull $IMAGE_NAME:$IMAGE_TAG && docker run -d -p 80:3000 --name myapp --restart always $IMAGE_NAME:$IMAGE_TAG'
             }
         }
     }
