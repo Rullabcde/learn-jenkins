@@ -34,7 +34,7 @@ pipeline {
             }
             steps {
                 echo "Installing dependencies and building the project"
-                sh 'npm install'
+                sh 'npm install --legacy-peer-deps'
                 sh 'npm run build'
             }
         }
