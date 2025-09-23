@@ -38,6 +38,16 @@ pipeline {
                 sh 'npm run build'
             }
         }
+        stage('Test') {
+            agent {
+                docker { image 'node:20' }
+            }
+            steps {
+                echo "Running tests"
+                sh 'npm test -- --junit-output=report.xml'
+                junit 'report.xml'
+            }
+        }
         stage('Deploy') {
             agent {
                 node {
@@ -63,13 +73,10 @@ pipeline {
     }
     post {
         success {
-            echo "Success"
+            slackSend(channel: '#jenkins', color: 'good', message: "Deployment succeeded for ${env.JOB_NAME} #${env.BUILD_NUMBER}")
         }
         failure {
-            echo "Failed"
-        }
-        unstable {
-            echo "Unstable"
+            slackSend(channel: '#jenkins', color: 'danger', message: "Deployment failed for ${env.JOB_NAME} #${env.BUILD_NUMBER}")
         }
     }
 }
