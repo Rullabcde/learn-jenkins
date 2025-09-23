@@ -50,6 +50,11 @@ pipeline {
             }
         }
         stage('Cleanup') {
+            agent {
+                node {
+                    label 'jenkins-agent'
+                }
+            }
             steps {
                 echo "Cleaning up workspace"
                 deleteDir()
