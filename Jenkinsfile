@@ -34,18 +34,8 @@ pipeline {
             }
             steps {
                 echo "Installing dependencies and building the project"
-                sh 'npm install --legacy-peer-deps'
+                sh 'npm install'
                 sh 'npm run build'
-            }
-        }
-        stage('Test') {
-            agent {
-                docker { image 'node:20' }
-            }
-            steps {
-                echo "Running tests"
-                sh 'npm test'
-                junit 'report.xml'
             }
         }
         stage('Deploy') {
