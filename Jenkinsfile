@@ -28,13 +28,31 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Rullabcde/learn-jenkins.git'
             }
         }
-        stage('Install & Build') {
+        stage('Install') {
             agent {
                 docker { image 'node:20' }
             }
             steps {
-                echo "Installing dependencies and building the project"
-                sh 'npm install'
+                echo "Installing dependencies"
+                sh 'npm ci'
+            }
+        }
+        stage ('Test & Coverage') {
+            agent {
+                docker { image 'node:20' }
+            }
+            steps {
+                echo "Running tests"
+                sh 'npm run test:coverage'
+                junit 'report.xml'
+            }
+        }
+        stage('Build') {
+            agent {
+                docker { image 'node:20' }
+            }
+            steps {
+                echo "Building the project"
                 sh 'npm run build'
             }
         }
