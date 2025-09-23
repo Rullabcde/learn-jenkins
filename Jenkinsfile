@@ -61,9 +61,6 @@ pipeline {
         failure {
             echo "Failed"
         }
-        changed {
-            echo "Pipeline changed"
-        }
         unstable {
             echo "Unstable"
         }
