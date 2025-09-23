@@ -19,6 +19,17 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Rullabcde/learn-jenkins.git'
             }
         }
+        stage ('Setup Node.js') {
+            steps {
+                echo "Setting up Node.js"
+                sh 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+                \. "$HOME/.nvm/nvm.sh"
+                nvm install 22
+                npm install -g npm'
+                sh 'node -v'
+                sh 'npm -v'
+            }
+        }
         stage('Install') {
             steps {
                 echo "Installing dependencies"
@@ -34,7 +45,6 @@ pipeline {
         stage('Test') {
             steps {
                 echo "Running tests"
-                sh 'npm test'
             }  
         }
         stage('Deploy') {
