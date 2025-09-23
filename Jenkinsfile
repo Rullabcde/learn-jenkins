@@ -71,7 +71,6 @@ pipeline {
                 sh '''
                     ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@ec2-3-235-232-5.compute-1.amazonaws.com \
                     "docker pull $IMAGE_NAME:$IMAGE_TAG && \
-                    docker rm -f myapp || true && \
                     docker run -d -p 80:3000 --name myapp --restart always $IMAGE_NAME:$IMAGE_TAG"
                 '''
                 }
