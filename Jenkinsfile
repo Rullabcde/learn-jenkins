@@ -11,31 +11,22 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent {
+                node {
+                    label 'jenkins-agent'
+                }
+            }
             steps {
                 git branch: 'main', url: 'https://github.com/Rullabcde/learn-jenkins.git'
             }
         }
-        stage('Install') {
+        stage('Install & Build') {
             agent {
-                docker {
-                    image 'node:20'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
+                docker { image 'node:20' }
             }
             steps {
-                echo "Installing dependencies"
+                echo "Installing dependencies and building the project"
                 sh 'npm install'
-            }
-        }
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:20'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            steps {
-                echo "Building the project"
                 sh 'npm run build'
             }
         }
