@@ -1,5 +1,14 @@
 pipeline {
     agent none
+    options {
+        ansiColor('xterm')
+        buildDiscarder(logRotator(
+            daysToKeepStr: '3',
+            numToKeepStr: '5',
+            artifactDaysToKeepStr: '3',
+            artifactNumToKeepStr: '5'
+        ))
+    }
 
     triggers {
         githubPush()
@@ -39,6 +48,12 @@ pipeline {
             steps {
                 echo "Deploying to production server"
                 sh 'echo $DEPLOY_KEY'
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                echo "Cleaning up workspace"
+                deleteDir()
             }
         }
     }
