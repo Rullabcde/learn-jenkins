@@ -69,14 +69,23 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'deploy-key', keyFileVariable: 'SSH_KEY')]) {
                 sh '''
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@ec2-3-235-232-5.compute-1.amazonaws.com \
-                    "docker system prune -a -f \
-                    docker pull $IMAGE_NAME:$IMAGE_TAG && \
-                    docker run -d -p 80:3000 --name myapp --restart always $IMAGE_NAME:$IMAGE_TAG"
+                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@ec2-3-235-232-5.compute-1.amazonaws.com << 'EOF'
+                    set -e
+
+                    docker stop myapp || true
+                    docker rm myapp || true
+
+                    docker system prune -a -f
+
+                    docker pull $IMAGE_NAME:$IMAGE_TAG
+
+                    docker run -d -p 80:3000 --name myapp --restart always $IMAGE_NAME:$IMAGE_TAG
+                    EOF
                 '''
                 }
             }
         }
+
     }
     post {
         always {
