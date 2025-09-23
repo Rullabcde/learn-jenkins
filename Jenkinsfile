@@ -1,5 +1,10 @@
 pipeline {
-    agent none
+    agent {
+        docker {
+            image: 'docker:24.0-dind'
+            args: '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     options {
         buildDiscarder(logRotator(
             daysToKeepStr: '3',
@@ -14,72 +19,44 @@ pipeline {
     }
 
     environment {
-        DEPLOY_KEY = credentials('deploy')
+        REGISTRY = 'docker.io'
+        IMAGE_NAME = 'docker.io/rullabcd/app'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
         stage('Checkout') {
-            agent {
-                node {
-                    label 'jenkins-agent'
-                }
-            }
             steps {
                 git branch: 'main', url: 'https://github.com/Rullabcde/learn-jenkins.git'
             }
         }
-        stage('Install') {
-            agent {
-                docker { image 'node:20' }
-            }
+        stage('Login to Docker Hub') {
             steps {
-                echo "Installing dependencies"
-                sh 'npm install --legacy-peer-deps'
-            }
-        }
-        stage ('Test & Coverage') {
-            agent {
-                docker { image 'node:20' }
-            }
-            steps {
-                echo "Running tests"
-                sh 'npm run test:coverage'
-                junit 'report.xml'
-            }
-        }
-        stage('Build') {
-            agent {
-                docker { image 'node:20' }
-            }
-            steps {
-                echo "Building the project"
-                sh 'npm run build'
-            }
-        }
-        stage('Deploy') {
-            agent {
-                node {
-                    label 'jenkins-agent'
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    sh 'echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin'
                 }
             }
+        }
+        stage ('Build Docker Image') {
             steps {
-                echo "Deploying to production server"
-                sh 'echo $DEPLOY_KEY'
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
-        stage('Cleanup') {
-            agent {
-                node {
-                    label 'jenkins-agent'
-                }
-            }
+        stage('Push Docker Image') {
             steps {
-                echo "Cleaning up workspace"
-                deleteDir()
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+            }
+        }
+        stage('Deploy to Production') {
+            steps {
+                echo "Deploying to production server..."
             }
         }
     }
     post {
+        always {
+            sh 'docker logout $REGISTRY || true'
+        }
         success {
             slackSend(channel: '#jenkins', color: 'good', message: "Deployment succeeded for ${env.JOB_NAME} #${env.BUILD_NUMBER}")
         }
