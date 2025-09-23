@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image: 'docker:24.0-dind'
-            args: '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     options {
